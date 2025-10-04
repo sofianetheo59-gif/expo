@@ -1,60 +1,75 @@
----
-title: EAS Build
-sidebar_title: Introduction
-hideTOC: true
-description: EAS Build is a hosted service for building app binaries for your Expo and React Native projects.
----
+import React, { useState } from 'react';
+import { View, Text, Image, PanResponder, Animated, StyleSheet, TouchableOpacity } from 'react-native';
 
-import { Cube01Icon } from '@expo/styleguide-icons/outline/Cube01Icon';
+export default function App() {
+  const [elements, setElements] = useState([
+    {
+      id: 1,
+      type: 'image',
+      uri: 'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=100&q=80',
+      position: new Animated.ValueXY({ x: 50, y: 50 }),
+    },
+    {
+      id: 2,
+      type: 'text',
+      text: 'Mon texte',
+      position: new Animated.ValueXY({ x: 150, y: 200 }),
+    },
+  ]);
 
-import { BoxLink } from '~/ui/components/BoxLink';
+  const createPanResponder = (element) =>
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: Animated.event(
+        [null, { dx: element.position.x, dy: element.position.y }],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: () => {},
+    });
 
-**EAS Build** is a hosted service for building app binaries for your Expo and React Native projects.
+  return (
+    <View style={styles.container}>
+      {elements.map((el) => (
+        <Animated.View
+          key={el.id}
+          style={[el.position.getLayout(), styles.box]}
+          {...createPanResponder(el).panHandlers}
+        >
+          {el.type === 'image' && <Image source={{ uri: el.uri }} style={{ width: 100, height: 100 }} />}
+          {el.type === 'text' && <Text style={styles.text}>{el.text}</Text>}
+        </Animated.View>
+      ))}
 
-It makes building your apps for distribution simple and easy to automate by providing defaults that work well for Expo and React Native projects out of the box, and by handling your app signing credentials for you (if you wish). It also makes sharing builds with your team easier than ever with [internal distribution](/build/internal-distribution/) (using ad hoc and/or enterprise "universal" provisioning), deeply integrates with EAS Submit for app store submissions, and has first-class support for the [`expo-updates`](/build/updates/) library.
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() =>
+          setElements([
+            ...elements,
+            {
+              id: elements.length + 1,
+              type: 'text',
+              text: 'Nouveau texte',
+              position: new Animated.ValueXY({ x: 100, y: 100 }),
+            },
+          ])
+        }
+      >
+        <Text style={{ color: 'white' }}>Ajouter Texte</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
-It's designed to work for any native project, whether or not you use Expo and React Native. It's the fastest way to get from `npx create-expo-app` or `npx @react-native-community/cli@latest init` to app stores.
-
-### Get started
-
-<BoxLink
-  title="Create your first build"
-  description="It should only take a few minutes in total to get up and running for iOS and/or Android."
-  href="/build/setup"
-  Icon={Cube01Icon}
-/>
-
-<BoxLink
-  title="Share your apps with internal testers"
-  description="EAS Build can help share preview builds of your app with a single URL."
-  href="/build/internal-distribution"
-  Icon={Cube01Icon}
-/>
-
-<BoxLink
-  title="Automate submissions"
-  description="Learn how you can have the service take your successful builds and handle uploading them to app stores for you automatically."
-  href="/build/automate-submissions"
-  Icon={Cube01Icon}
-/>
-
-<BoxLink
-  title="App version management"
-  description="Automate version bumps so you never have to think about them again."
-  href="/build-reference/app-versions"
-  Icon={Cube01Icon}
-/>
-
-<BoxLink
-  title="Run builds locally or on your own infrastructure"
-  description="EAS Build is a hosted service, but you can also run it on your own machine, for example, to debug or to comply with any company security policies."
-  href="/build-reference/local-builds"
-  Icon={Cube01Icon}
-/>
-
-<BoxLink
-  title="Limitations"
-  description="EAS Build is new and rapidly evolving, so we recommend getting familiar with the current limitations."
-  href="/build-reference/limitations"
-  Icon={Cube01Icon}
-/>
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#fff' },
+  box: { position: 'absolute' },
+  text: { color: 'black', fontSize: 18 },
+  button: {
+    position: 'absolute',
+    bottom: 40,
+    left: 20,
+    backgroundColor: 'blue',
+    padding: 15,
+    borderRadius: 10,
+  },
+});
